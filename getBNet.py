@@ -9,6 +9,10 @@ Shows position, win rate, wins and losses, and points.
 Modify the 'defaultProfiles' array for the profiles you want to look up if no arguments are given.
 
 BUG: nonrandom Multiplayer still crashes the script (due to multiple player names)
+
+Source: https://github.com/ax42/getBNet
+Contact: sc2.frozen@fastmail.fm
+
 """
 
 # profile: Name, Number, League type (1,2,3,4)
