@@ -15,9 +15,12 @@ Contact: sc2.frozen@fastmail.fm
 
 """
 
-# profile: Name, Number, League type (1,2,3,4)
+# profile either:
+# Name, Number, League (1,2,4), Server
+# URL, [optional League, default is "1"] 
 defaultProfiles = [["Frozen", "2492514", "1", "eu"], 
                    ["Pain", "2874785", "1", "eu"],
+                   ["http://eu.battle.net/sc2/en/profile/2104202/1/eXeNoLuck/"],
                    ]
 
 import sys
@@ -29,40 +32,57 @@ import re
 from BeautifulSoup import BeautifulSoup
 
 def main():
-    DEBUG = 0
+    DEBUG = 1
 
     ap = argparse.ArgumentParser(description="Fetch SC2 character information from battle.net")
     ap.add_argument('-v','--verbose', default=0,
         help="Verbose output, add more v's for more verbosity", action="count")
-    ap.add_argument('-c', '--character', help="Name BNet# League eu/na", nargs=4, action="append", default=None)
-    ap.add_argument('-f', '--find', help='Specify a default profile to display', action="append", default=None)
+    ap.add_argument('-c', '--character', metavar=("Name","BNet#","League 1/2/4", "eu/na"), nargs=4, action="append", help="Character details", default=None)
+    ap.add_argument('-u', '--url', metavar=("Battle.net URL", "League 1/2/4"), help='Battle.net URL [optional league 1/2/4, default=1]', default=None, action="append", nargs='+')
+    ap.add_argument('-f', '--find', metavar="Name", help='Specify a default profile to display', action="append", default=None)
 
     args = ap.parse_args()
     if DEBUG: print "args", args
     DEBUG = args.verbose
 
-    if args.character: profiles = args.character
-    elif args.find: 
-        profiles = [x for x in defaultProfiles if (x[0] in args.find)]
-        if profiles == []: 
-            print "None of the character(s) %s are in the default profile list, exiting." % args.find
-            sys.exit(1)
-    else: profiles = defaultProfiles
+    profiles = []
+    if args.character: [profiles.append(x) for x in args.character]
+    if args.find:
+        for f in args.find:
+            [profiles.append(x) for x in defaultProfiles if re.search(f, x[0]) != None]
+    if args.url: [profiles.append(x) for x in args.url]  
+    if len(profiles) == 0: profiles = defaultProfiles
 
+    if len(profiles) == 0:  # ie the defaultProfiles list was empty -- edge case
+        print "Please specify at least one profile to look up.  Exiting."
+        sys.exit(1)
+
+    if DEBUG: print "Profiles to fetch:", profiles
     # regex for ladder page
     r = re.compile(r"/sc2/en/profile/(\d+)/\d/(\S+)/")
     
     for curPlayer in profiles:
         #First find the league page
-        charURL = "http://%s.battle.net/sc2/en/profile/%s/1/%s/" % (curPlayer[3], curPlayer[1], curPlayer[0])
-        if DEBUG: print charURL
+        if len(curPlayer) == 1:  # assume it's only a URL
+            charURL = curPlayer[0]
+            pLeague = "1" # URLS hard-coded to 1v1 for now
+        elif len(curPlayer) == 2: # assume a URL and a league
+            charURL = curPlayer[0]
+            pLeague = curPlayer[1]
+        else:
+            charURL = "http://%s.battle.net/sc2/en/profile/%s/1/%s/" % (curPlayer[3], curPlayer[1], curPlayer[0])
+            pLeague = curPlayer[2]
+        if DEBUG: print "charURL", charURL
+        
+        pServer, pNo, pName = re.match(r"http://(..)\.battle\.net/sc2/en/profile/(\d+)/\d/(\S+)/", charURL).groups()
+        if DEBUG: print pServer, pNo, pName, pLeague
     
         # Open profile page, figure out ladder URL
         raw = urllib.urlopen(charURL).read()
         if DEBUG > 2: print raw
         p = BeautifulSoup(raw)
-        ladderURL = "http://%s.battle.net" % (curPlayer[3]) + \
-            p.find('div', {"class":"ladder", "data-tooltip":"#best-team-%s" % (curPlayer[2])}).find('a')['href']
+        ladderURL = "http://%s.battle.net" % (pServer) + \
+            p.find('div', {"class":"ladder", "data-tooltip":"#best-team-%s" % (pLeague)}).find('a')['href']
         if DEBUG: print ladderURL
         
         # Read ladder page and parse it for current points standings
@@ -83,14 +103,13 @@ def main():
         points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
         
         players = zip(ranks, nums, names, points)  
-        playerIndex = nums.index(curPlayer[1])
-            
+        playerIndex = nums.index(pNo)
             
         # Get match history
         matchURL = charURL + "matches"
         raw = urllib.urlopen(matchURL).read()
         p = BeautifulSoup(raw)
-        matchType = {"1":"solo", "2":"twos", "4":"fours"}[curPlayer[2]]
+        matchType = {"1":"solo", "2":"twos", "4":"fours"}[pLeague]
         pMatches = p.findAll('tr',{"class":"match-row %s" % (matchType)})
         if DEBUG: print "pMatches", len(pMatches)
         
