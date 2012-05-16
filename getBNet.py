@@ -32,7 +32,7 @@ import re
 from BeautifulSoup import BeautifulSoup
 
 def main():
-    DEBUG = 1
+    DEBUG = 0
 
     ap = argparse.ArgumentParser(description="Fetch SC2 character information from battle.net")
     ap.add_argument('-v','--verbose', default=0,
