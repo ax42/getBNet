@@ -21,6 +21,9 @@ Contact: sc2.frozen@fastmail.fm
 defaultProfiles = [["Frozen", "2492514", "1", "eu"], 
                    ["Pain", "2874785", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/eXeNoLuck/"],
+                   ["http://eu.battle.net/sc2/en/profile/2149899/1/CiderDad/"],
+                   ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
+                   #["http://eu.battle.net/sc2/en/profile/574878/1/Zero/"],
                    ]
 
 import sys
@@ -32,8 +35,6 @@ import re
 from BeautifulSoup import BeautifulSoup
 
 def main():
-    DEBUG = 0
-
     ap = argparse.ArgumentParser(description="Fetch SC2 character information from battle.net")
     ap.add_argument('-v','--verbose', default=0,
         help="Verbose output, add more v's for more verbosity", action="count")
@@ -42,8 +43,8 @@ def main():
     ap.add_argument('-f', '--find', metavar="Name", help='Specify a default profile to display', action="append", default=None)
 
     args = ap.parse_args()
-    if DEBUG: print "args", args
-    DEBUG = args.verbose
+    VERBOSE = args.verbose
+    if VERBOSE: print "args", args
 
     profiles = []
     if args.character: [profiles.append(x) for x in args.character]
@@ -57,7 +58,7 @@ def main():
         print "Please specify at least one profile to look up.  Exiting."
         sys.exit(1)
 
-    if DEBUG: print "Profiles to fetch:", profiles
+    if VERBOSE: print "Profiles to fetch:", profiles
     # regex for ladder page
     r = re.compile(r"/sc2/en/profile/(\d+)/\d/(\S+)/")
     
@@ -72,29 +73,40 @@ def main():
         else:
             charURL = "http://%s.battle.net/sc2/en/profile/%s/1/%s/" % (curPlayer[3], curPlayer[1], curPlayer[0])
             pLeague = curPlayer[2]
-        if DEBUG: print "charURL", charURL
+        if VERBOSE: print "charURL", charURL
         
         pServer, pNo, pName = re.match(r"http://(..)\.battle\.net/sc2/en/profile/(\d+)/\d/(\S+)/", charURL).groups()
-        if DEBUG: print pServer, pNo, pName, pLeague
+        if VERBOSE: print pServer, pNo, pName, pLeague
     
         # Open profile page, figure out ladder URL
         raw = urllib.urlopen(charURL).read()
-        if DEBUG > 2: print raw
+        if VERBOSE > 2: print raw
         p = BeautifulSoup(raw)
-        ladderURL = "http://%s.battle.net" % (pServer) + \
-            p.find('div', {"class":"ladder", "data-tooltip":"#best-team-%s" % (pLeague)}).find('a')['href']
-        if DEBUG: print ladderURL
+        try:
+            ladderURL = "http://%s.battle.net" % (pServer) + \
+                p.find('div', {"class":"ladder", "data-tooltip":"#best-team-%s" % (pLeague)}).find('a')['href']
+        except:
+            if VERBOSE: print p.title
+            print "%s: Couldn't determine ladder URL from b.net ('%s'), skipping" % (pName, p.title.string)
+            continue # go to next character
+            
+        if VERBOSE: print "ladderURL", ladderURL
         
         # Read ladder page and parse it for current points standings
         raw = urllib.urlopen(ladderURL.encode('utf-8')).read()
         p = BeautifulSoup(raw)
-        division = p.find('',{'class' : 'data-title'}).find(text=re.compile('Division'))
+        try:
+            division = p.find('',{'class' : 'data-title'}).find(text=re.compile('Division'))
+        except:
+            print "%s: Couldn't read division information from b.net ('%s'), skipping" % (pName, p.title.string)
+            continue # go to next character
+            
         level = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
-        if DEBUG: print division, level
+        if VERBOSE: print division, level
         
         ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
         
-        if DEBUG > 1: print ltable
+        if VERBOSE > 1: print ltable
         
         ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
         
@@ -111,15 +123,15 @@ def main():
         p = BeautifulSoup(raw)
         matchType = {"1":"solo", "2":"twos", "4":"fours"}[pLeague]
         pMatches = p.findAll('tr',{"class":"match-row %s" % (matchType)})
-        if DEBUG: print "pMatches", len(pMatches)
+        if VERBOSE: print "len(pMatches)", len(pMatches)
         
         matchScores = [int(x.find('span',{"class":re.compile("text-")}).string) for x in pMatches]
         matchWins = len([x for x in matchScores if x > 0])
-        if DEBUG: print matchScores
+        if VERBOSE: print "matchScores", matchScores
             
-        if DEBUG > 1: print "%d players" % (len(players)), players
-        if DEBUG > 1: print "playerIndex", playerIndex
-        if DEBUG: print players[playerIndex]
+        if VERBOSE > 1: print "%d players" % (len(players)), players
+        if VERBOSE > 1: print "playerIndex", playerIndex
+        if VERBOSE: print players[playerIndex]
         
         def pprint(v):
             """ print player points for index v, surround with [] if it is current player
@@ -127,11 +139,16 @@ def main():
             if (v == playerIndex): print "[%s]" % players[v][3],
             else: print "%s" % players[v][3],
         
-        print "%s: %s in %s, won %d of %d (%d%%, %d pts) %s " % \
-            (players[playerIndex][2], players[playerIndex][0], level, \
-            matchWins, len(matchScores), (matchWins / float(len(matchScores))) * 100, \
-            sum(matchScores), \
-            ''.join(["." if x < 0 else "|" for x in matchScores])),
+        print "%s: %s in %s, " % (players[playerIndex][2], players[playerIndex][0], level), 
+        
+        if len(pMatches) > 0:
+            print "won %d of %d (%d%%, %d pts) %s " % (matchWins, len(matchScores), \
+                (matchWins / float(len(matchScores))) * 100, \
+                sum(matchScores), \
+                ''.join(["." if x < 0 else "|" for x in matchScores])),
+        else:
+            print "No matches found",
+            
                     
         pprint(0)
         if playerIndex > 4: print "...",
