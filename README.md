@@ -10,14 +10,19 @@ Works for me under python 2.7 on OS X and requires BeautifulSoup
 
 BUG: nonrandom Multiplayer still crashes the script (due to multiple player names)
 
-Usage: getBNet.py [-h] [-v] [-c Name BNet# League Region] [-f KnownName]  
-optional arguments:  
-  -h, --help                    show this help message and exit  
-  -v, --verbose                 Verbose output, add more v's for more verbosity  
-  -c  Name BNet# League eu/na   Where BNet# is the one from your URL and League is 1/2/4  
-  -f FIND, --find               Specify a profile from the defaults to display  
+usage: getBNet.py [-h] [-v] [-c Name BNet# League 1/2/4 eu/na]
+                  [-u Battle.net URL [League 1/2/4 ...]] [-f Name]
 
--f and -c can be repeated.  Edit the defaultProfiles array at the top of 
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         Verbose output, add more v's for more verbosity
+  -c Name BNet# League 1/2/4 eu/na, --character Name BNet# League 1/2/4 eu/na
+                        Character details
+  -u Battle.net URL [League 1/2/4 ...], --url Battle.net URL [League 1/2/4 ...]
+                        Battle.net URL [optional league 1/2/4, default=1]
+  -f Name, --find Name  Specify a default profile to display
+
+-f, -u and -c can be repeated (and mixed).  Edit the defaultProfiles array at the top of 
   the .py file for characters you use often.
 
 Output looks like the following:
