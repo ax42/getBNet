@@ -46,6 +46,9 @@ def main():
     ap.add_argument('-c', '--character', metavar=("Name","BNet#","League 1/2/4", "eu/na"), nargs=4, action="append", help="Character details", default=None)
     ap.add_argument('-u', '--url', metavar=("Battle.net URL", "League 1/2/4"), help='Battle.net URL [optional league 1/2/4, default=1]', default=None, action="append", nargs='+')
     ap.add_argument('-f', '--find', metavar="Name", help='Specify a default profile to display', action="append", default=None)
+    outputFormat = ap.add_mutually_exclusive_group()
+    outputFormat.add_argument('-ob', '--output-bbcode', help="Output in BBCode markup", action="store_true")
+
 
     args = ap.parse_args()
     VERBOSE = args.verbose
@@ -106,8 +109,8 @@ def main():
             print "%s: Couldn't read division information from b.net ('%s'), skipping" % (pName, p.title.string)
             continue # go to next character
             
-        level = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
-        if VERBOSE: print division, level
+        league = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
+        if VERBOSE: print division, league
         
         ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
         
@@ -141,16 +144,25 @@ def main():
         def pprint(v):
             """ print player points for index v, surround with [] if it is current player
             """
-            if (v == playerIndex): print "[%s]" % players[v][3],
+            if (v == playerIndex):
+                if args.output_bbcode: print "[color=#dd2423]",
+                print "[%s]" % players[v][3],
+                if args.output_bbcode: print "[/color]",
             else: print "%s" % players[v][3],
         
-        print "%s: %s in %s," % (players[playerIndex][2], players[playerIndex][0], level), 
+        print "%s:" % (pName),
+        if args.output_bbcode: print "[color=#dd2423]",
+        print "%s" % (players[playerIndex][0]), # rank
+        if args.output_bbcode: print "[/color]",
+        
+        print "in %s," % (league),
+        #print "%s: %s in %s," % (players[playerIndex][2], players[playerIndex][0], league), 
         
         if len(pMatches) > 0:
             print "won %d of %d (%d%%, %+d pts) %s " % (matchWins, len(matchScores), \
                 (matchWins / float(len(matchScores))) * 100, \
                 sum(matchScores), \
-                ''.join(["." if x < 0 else "|" for x in matchScores])),
+                ''.join(["." if x < 0 else "+" for x in matchScores])),
         else:
             print "No matches found",
             
