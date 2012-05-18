@@ -22,8 +22,13 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["Pain", "2874785", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/eXeNoLuck/"],
                    ["http://eu.battle.net/sc2/en/profile/2149899/1/CiderDad/"],
+                   ["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
+                   ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],                   
+                   ["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
+                   ["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
-                   #["http://eu.battle.net/sc2/en/profile/574878/1/Zero/"],
+                   ["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
+                   ["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
                    ]
 
 import sys
@@ -123,7 +128,7 @@ def main():
         p = BeautifulSoup(raw)
         matchType = {"1":"solo", "2":"twos", "4":"fours"}[pLeague]
         pMatches = p.findAll('tr',{"class":"match-row %s" % (matchType)})
-        if VERBOSE: print "len(pMatches)", len(pMatches)
+        if VERBOSE: print "len(pMatches)", len(pMatches), p.title.string
         
         matchScores = [int(x.find('span',{"class":re.compile("text-")}).string) for x in pMatches]
         matchWins = len([x for x in matchScores if x > 0])
@@ -139,10 +144,10 @@ def main():
             if (v == playerIndex): print "[%s]" % players[v][3],
             else: print "%s" % players[v][3],
         
-        print "%s: %s in %s, " % (players[playerIndex][2], players[playerIndex][0], level), 
+        print "%s: %s in %s," % (players[playerIndex][2], players[playerIndex][0], level), 
         
         if len(pMatches) > 0:
-            print "won %d of %d (%d%%, %d pts) %s " % (matchWins, len(matchScores), \
+            print "won %d of %d (%d%%, %+d pts) %s " % (matchWins, len(matchScores), \
                 (matchWins / float(len(matchScores))) * 100, \
                 sum(matchScores), \
                 ''.join(["." if x < 0 else "|" for x in matchScores])),
