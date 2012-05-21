@@ -35,10 +35,9 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
 
 import sys
 import argparse
-
 import urllib, urlparse
 import re
-
+from datetime import datetime
 from BeautifulSoup import BeautifulSoup
 
 def main():
@@ -47,7 +46,7 @@ def main():
         help="Verbose output, add more v's for more verbosity", action="count")
     ap.add_argument('-c', '--character', metavar=("Name","BNet#","League 1/2/4", "eu/na"), nargs=4, action="append", help="Character details", default=None)
     ap.add_argument('-u', '--url', metavar=("Battle.net URL", "League 1/2/4"), help='Battle.net URL [optional league 1/2/4, default=1]', default=None, action="append", nargs='+')
-    ap.add_argument('-f', '--find', metavar="Name", help='Specify a default profile to display', action="append", default=None)
+    ap.add_argument('-f', '--find', metavar="Name", help='Specify one of the builtin profiles to display', action="append", default=None)
     outputFormat = ap.add_mutually_exclusive_group()
     outputFormat.add_argument('-ob', '--output-bbcode', help="Output in BBCode markup", action="store_true")
 
@@ -137,7 +136,11 @@ def main():
         
         matchScores = [int(x.find('span',{"class":re.compile("text-")}).string) for x in pMatches]
         matchWins = len([x for x in matchScores if x > 0])
+        matchDates = [datetime.strptime(x.find('',{"class":"align-right"}).string.strip(), "%d/%m/%Y") for x in pMatches]
+
+        matchPeriod = (datetime.today() - matchDates[-1]).days +1
         if VERBOSE: print "matchScores", matchScores
+        if VERBOSE: print "matchDates", matchDates
             
         if VERBOSE > 1: print "%d players" % (len(players)), players
         if VERBOSE > 1: print "playerIndex", playerIndex
@@ -161,10 +164,11 @@ def main():
         #print "%s: %s in %s," % (players[playerIndex][2], players[playerIndex][0], league), 
         
         if len(pMatches) > 0:
-            print "won %d of %d (%d%%, %+d pts) %s " % (matchWins, len(matchScores), \
+            print "won %d of %d over last %d day%s (%d%%, %+d pts)"  % (matchWins, len(matchScores), \
+                matchPeriod, "s" if matchPeriod > 1 else "", \
                 (matchWins / float(len(matchScores))) * 100, \
-                sum(matchScores), \
-                ''.join(["." if x < 0 else "+" for x in matchScores])),
+                sum(matchScores)),
+            print ''.join(["." if x < 0 else "+" for x in matchScores]),
         else:
             print "No matches found",
             
@@ -174,6 +178,7 @@ def main():
         for x in range(max(1, playerIndex - 3), min(playerIndex + 3, len(players))):
             pprint(x)
         print
+        
 
 if __name__ == '__main__':
     main()
