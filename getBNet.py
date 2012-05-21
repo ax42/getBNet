@@ -19,7 +19,6 @@ Contact: sc2.frozen@fastmail.fm
 # Name, Number, League (1,2,4), Server
 # URL, [optional League, default is "1"] 
 defaultProfiles = [["Frozen", "2492514", "1", "eu"], 
-                   ["Pain", "2874785", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/eXeNoLuck/"],
                    ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
                    ["http://eu.battle.net/sc2/en/profile/2718974/1/MrChipindip/"],
@@ -30,7 +29,8 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
                    ["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
-                   ["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
+                   ["Pain", "2874785", "1", "eu"],
+                   #["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
                    ]
 
 import sys
@@ -155,32 +155,39 @@ def main():
                 if args.output_bbcode: print "[/color]",
             else: print "%s" % players[v][3],
         
-        if args.output_bbcode: print "[color=#239edd]",  # blue
-        print "%s:" % (pName),
-        if args.output_bbcode: print "[/color]",
+        if args.output_bbcode:
+            oName = "[url=%s]%s[/url]" % (charURL, pName)
+            oLeague = "[color=#dd2423]%s[/color] in [url=%s]%s[/url]" % \
+                (players[playerIndex][0], ladderURL, league)
+        else:
+            oName = pName
+            oLeague = "%s in %s" % (players[playerIndex][0], league)
         
-        if args.output_bbcode: print "[color=#dd2423]",  # red
-        print "%s" % (players[playerIndex][0]), # rank
-        if args.output_bbcode: print "[/color]",
+        print "%s: %s" % (oName, oLeague),
         
-        print "in %s," % (league),
         pprint(0)
         if playerIndex > 4: print "...",
         for x in range(max(1, playerIndex - 3), min(playerIndex + 3, len(players))):
             pprint(x)     
         print
         print ' ' * (len(pName)+1),
+        
         if len(pMatches) > 0:
             matchPeriod = (datetime.today() - matchDates[-1]).days +1
-            print "won %d of %d over last %d day%s (%d%%, %+d pts)"  % (matchWins, len(matchScores), \
+            if args.output_bbcode:
+                oWinRate = "[url=%s]%d%%[/url]" % (matchURL, matchWins / float(len(matchScores)) * 100)
+            else:
+                oWinRate = "%d%%" % ((matchWins / float(len(matchScores))) * 100)
+            
+            print "won %d of %d over last %d day%s (%s, %+d pts)"  % (matchWins, len(matchScores), \
                 matchPeriod, "s" if matchPeriod > 1 else "", \
-                (matchWins / float(len(matchScores))) * 100, \
+                oWinRate,
                 sum(matchScores)),
             print ''.join(["." if x < 0 else "+" for x in matchScores])
         else:
-            print "No matches found"
+            if args.output_bbcode: print "[url=%s]No %sv%s matches found[/url]" % (matchURL, pLeague, pLeague)
+            else: print "No %sv%s matches found" % (pLeague, pLeague)
             
-
 if __name__ == '__main__':
     main()
 
