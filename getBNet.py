@@ -138,7 +138,7 @@ def main():
         matchWins = len([x for x in matchScores if x > 0])
         matchDates = [datetime.strptime(x.find('',{"class":"align-right"}).string.strip(), "%d/%m/%Y") for x in pMatches]
 
-        matchPeriod = (datetime.today() - matchDates[-1]).days +1
+        
         if VERBOSE: print "matchScores", matchScores
         if VERBOSE: print "matchDates", matchDates
             
@@ -164,6 +164,7 @@ def main():
         #print "%s: %s in %s," % (players[playerIndex][2], players[playerIndex][0], league), 
         
         if len(pMatches) > 0:
+            matchPeriod = (datetime.today() - matchDates[-1]).days +1
             print "won %d of %d over last %d day%s (%d%%, %+d pts)"  % (matchWins, len(matchScores), \
                 matchPeriod, "s" if matchPeriod > 1 else "", \
                 (matchWins / float(len(matchScores))) * 100, \
