@@ -21,6 +21,8 @@ Contact: sc2.frozen@fastmail.fm
 defaultProfiles = [["Frozen", "2492514", "1", "eu"], 
                    ["Pain", "2874785", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/eXeNoLuck/"],
+                   ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
+                   ["http://eu.battle.net/sc2/en/profile/2718974/1/MrChipindip/"],
                    ["http://eu.battle.net/sc2/en/profile/2149899/1/CiderDad/"],
                    ["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
                    ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],                   
