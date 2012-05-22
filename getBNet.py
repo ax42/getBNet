@@ -49,7 +49,7 @@ def main():
     ap.add_argument('-f', '--find', metavar="Name", help='Specify one of the builtin profiles to display', action="append", default=None)
     outputFormat = ap.add_mutually_exclusive_group()
     outputFormat.add_argument('-ob', '--output-bbcode', help="Output in BBCode markup", action="store_true")
-
+    outputFormat.add_argument('-oh', '--output-html', help="Output with html markup", action="store_true")
 
     args = ap.parse_args()
     VERBOSE = args.verbose
@@ -151,13 +151,19 @@ def main():
             """
             if (v == playerIndex):
                 if args.output_bbcode: print "[color=#dd2423]",
+                elif args.output_html: print '<span style="color:#dd2423">',
                 print "[%s]" % players[v][3],
                 if args.output_bbcode: print "[/color]",
+                elif args.output_html: print "</span>",
             else: print "%s" % players[v][3],
         
         if args.output_bbcode:
             oName = "[url=%s]%s[/url]" % (charURL, pName)
             oLeague = "[color=#dd2423]%s[/color] in [url=%s]%s[/url]" % \
+                (players[playerIndex][0], ladderURL, league)
+        elif args.output_html:
+            oName = '<a href="%s">%s</a>' % (charURL, pName)
+            oLeague = '<span style="color:#dd2423">%s</span> in <a href=%s>%s</a>' % \
                 (players[playerIndex][0], ladderURL, league)
         else:
             oName = pName
@@ -176,9 +182,12 @@ def main():
             matchPeriod = (datetime.today() - matchDates[-1]).days +1
             if args.output_bbcode:
                 oWinRate = "[url=%s]%d%%[/url]" % (matchURL, matchWins / float(len(matchScores)) * 100)
+            elif args.output_html:
+                oWinRate = '<a href="%s">%d%%</a>' % (matchURL, matchWins / float(len(matchScores)) * 100)
             else:
                 oWinRate = "%d%%" % ((matchWins / float(len(matchScores))) * 100)
             
+            if args.output_html: print "<br>"
             print "won %d of %d over last %d day%s (%s, %+d pts)"  % (matchWins, len(matchScores), \
                 matchPeriod, "s" if matchPeriod > 1 else "", \
                 oWinRate,
@@ -186,7 +195,9 @@ def main():
             print ''.join(["." if x < 0 else "+" for x in matchScores])
         else:
             if args.output_bbcode: print "[url=%s]No %sv%s matches found[/url]" % (matchURL, pLeague, pLeague)
+            elif args.output_html: print '<a href="%s">No %sv%s matches found</a>' % (matchURL, pLeague, pLeague)
             else: print "No %sv%s matches found" % (pLeague, pLeague)
+        if args.output_html: print "<br><br>"
             
 if __name__ == '__main__':
     main()
