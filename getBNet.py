@@ -23,9 +23,9 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
                    ["http://eu.battle.net/sc2/en/profile/2718974/1/MrChipindip/"],
                    ["http://eu.battle.net/sc2/en/profile/2149899/1/CiderDad/"],
-                   ["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
+                   #["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
                    ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],                   
-                   ["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
+                   #["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
                    ["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
                    ["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
@@ -50,6 +50,7 @@ def main():
     outputFormat = ap.add_mutually_exclusive_group()
     outputFormat.add_argument('-ob', '--output-bbcode', help="Output in BBCode markup", action="store_true")
     outputFormat.add_argument('-oh', '--output-html', help="Output with html markup", action="store_true")
+    outputFormat.add_argument('-ow', '--output-wikia', help="Output with wikia markup", action="store_true")
 
     args = ap.parse_args()
     VERBOSE = args.verbose
@@ -91,41 +92,52 @@ def main():
         raw = urllib.urlopen(charURL).read()
         if VERBOSE > 2: print raw
         p = BeautifulSoup(raw)
+        ladderFound = False
+        divisionFound = False
+        
         try:
             ladderURL = "http://%s.battle.net" % (pServer) + \
                 p.find('div', {"class":"ladder", "data-tooltip":"#best-team-%s" % (pLeague)}).find('a')['href']
+            ladderFound = True
         except:
             if VERBOSE: print p.title
-            print "%s: Couldn't determine ladder URL from b.net ('%s'), skipping" % (pName, p.title.string)
-            continue # go to next character
+            pass
+            #print "%s: Couldn't determine ladder URL from b.net ('%s'), skipping" % (pName, p.title.string)
+        
             
         if VERBOSE: print "ladderURL", ladderURL
         
-        # Read ladder page and parse it for current points standings
-        raw = urllib.urlopen(ladderURL.encode('utf-8')).read()
-        p = BeautifulSoup(raw)
-        try:
-            division = p.find('',{'class' : 'data-title'}).find(text=re.compile('Division'))
-        except:
-            print "%s: Couldn't read division information from b.net ('%s'), skipping" % (pName, p.title.string)
-            continue # go to next character
+        if ladderFound:
+            # Read ladder page and parse it for current points standings
+            raw = urllib.urlopen(ladderURL.encode('utf-8')).read()
+            p = BeautifulSoup(raw)
+            try:
+                division = p.find('',{'class' : 'data-title'}).find(text=re.compile('Division'))
+                divisionFound = True
+            except:
+                pass
+                #print "%s: Couldn't read division information from b.net ('%s'), skipping" % (pName, p.title.string)
             
-        league = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
-        if VERBOSE: print division, league
-        
-        ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
-        
-        if VERBOSE > 1: print ltable
-        
-        ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
-        
-        nums = [r.match(y).group(1) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
-        names = [r.match(y).group(2) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
-        points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
-        
-        players = zip(ranks, nums, names, points)  
-        playerIndex = nums.index(pNo)
-            
+            if divisionFound:    
+                league = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
+                if VERBOSE: print division, league
+                
+                ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
+                
+                if VERBOSE > 1: print ltable
+                
+                ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
+                
+                nums = [r.match(y).group(1) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
+                names = [r.match(y).group(2) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
+                points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
+                
+                players = zip(ranks, nums, names, points)  
+                playerIndex = nums.index(pNo)
+                if VERBOSE > 1: print "%d players" % (len(players)), players
+                if VERBOSE > 1: print "playerIndex", playerIndex
+                if VERBOSE: print players[playerIndex]
+                
         # Get match history
         matchURL = charURL + "matches"
         raw = urllib.urlopen(matchURL).read()
@@ -134,49 +146,69 @@ def main():
         pMatches = p.findAll('tr',{"class":"match-row %s" % (matchType)})
         if VERBOSE: print "len(pMatches)", len(pMatches), p.title.string
         
-        matchScores = [int(x.find('span',{"class":re.compile("text-")}).string) for x in pMatches]
-        matchWins = len([x for x in matchScores if x > 0])
         matchDates = [datetime.strptime(x.find('',{"class":"align-right"}).string.strip(), "%d/%m/%Y") for x in pMatches]
-
+        matchScores = []
+        for x in pMatches:
+            try:
+                matchScores.append(int(x.find('span',{"class":re.compile("text-")}).string))
+            except AttributeError:
+                matchScores.append(0)
+        
+        #matchScores = [int(x.find('span',{"class":re.compile("text-")}).string) for x in pMatches]
+        matchWins = len([x for x in matchScores if x > 0])
+        
         
         if VERBOSE: print "matchScores", matchScores
         if VERBOSE: print "matchDates", matchDates
             
-        if VERBOSE > 1: print "%d players" % (len(players)), players
-        if VERBOSE > 1: print "playerIndex", playerIndex
-        if VERBOSE: print players[playerIndex]
-        
         def pprint(v):
             """ print player points for index v, surround with [] if it is current player
             """
             if (v == playerIndex):
                 if args.output_bbcode: print "[color=#dd2423]",
                 elif args.output_html: print '<span style="color:#dd2423">',
+                elif args.output_wikia: print '<u>',
                 print "[%s]" % players[v][3],
                 if args.output_bbcode: print "[/color]",
                 elif args.output_html: print "</span>",
+                elif args.output_wikia: print '</u>',
             else: print "%s" % players[v][3],
-        
+            
         if args.output_bbcode:
             oName = "[url=%s]%s[/url]" % (charURL, pName)
-            oLeague = "[color=#dd2423]%s[/color] in [url=%s]%s[/url]" % \
-                (players[playerIndex][0], ladderURL, league)
+            if divisionFound:
+                oLeague = "[color=#dd2423]%s[/color] in [url=%s]%s[/url]" % \
+                    (players[playerIndex][0], ladderURL, league)
         elif args.output_html:
             oName = '<a href="%s">%s</a>' % (charURL, pName)
-            oLeague = '<span style="color:#dd2423">%s</span> in <a href=%s>%s</a>' % \
-                (players[playerIndex][0], ladderURL, league)
+            if divisionFound:       
+                oLeague = '<span style="color:#dd2423">%s</span> in <a href=%s>%s</a>' % \
+                    (players[playerIndex][0], ladderURL, league)
+        elif args.output_wikia:
+            oName = '[%s %s]' % (charURL, pName)
+            if divisionFound:       
+                oLeague = '%s in [%s %s]' % \
+                    (players[playerIndex][0], ladderURL, league)
         else:
             oName = pName
-            oLeague = "%s in %s" % (players[playerIndex][0], league)
+            if divisionFound:
+                oLeague = "%s in %s" % (players[playerIndex][0], league)
+
+        if not divisionFound: oLeague = "Could not read ladder info from b.net"
         
-        print "%s: %s" % (oName, oLeague),
         
-        pprint(0)
-        if playerIndex > 4: print "...",
-        for x in range(max(1, playerIndex - 3), min(playerIndex + 3, len(players))):
-            pprint(x)     
-        print
-        print ' ' * (len(pName)+1),
+        print "%s" % (";" if args.output_wikia else "") ,oName, ":", oLeague,
+        
+        if divisionFound:
+            pprint(0)
+            if playerIndex > 4: print "...",
+            for x in range(max(1, playerIndex - 3), min(playerIndex + 3, len(players))):
+                pprint(x)   
+        print  
+        if args.output_wikia: 
+            print ":",
+        else: 
+            print ' ' * (len(pName)+1),
         
         if len(pMatches) > 0:
             matchPeriod = (datetime.today() - matchDates[-1]).days +1
@@ -184,6 +216,8 @@ def main():
                 oWinRate = "[url=%s]%d%%[/url]" % (matchURL, matchWins / float(len(matchScores)) * 100)
             elif args.output_html:
                 oWinRate = '<a href="%s">%d%%</a>' % (matchURL, matchWins / float(len(matchScores)) * 100)
+            elif args.output_wikia:  
+                oWinRate = '[%s %d%%]' % (matchURL, matchWins / float(len(matchScores)) * 100)
             else:
                 oWinRate = "%d%%" % ((matchWins / float(len(matchScores))) * 100)
             
@@ -192,12 +226,15 @@ def main():
                 matchPeriod, "s" if matchPeriod > 1 else "", \
                 oWinRate,
                 sum(matchScores)),
-            print ''.join(["." if x < 0 else "+" for x in matchScores])
+            print ''.join(["." if x < 0 else "+" if x > 0 else "x" for x in matchScores])
         else:
             if args.output_bbcode: print "[url=%s]No %sv%s matches found[/url]" % (matchURL, pLeague, pLeague)
             elif args.output_html: print '<a href="%s">No %sv%s matches found</a>' % (matchURL, pLeague, pLeague)
+            elif args.output_wikia: print '[%s No %sv%s matches found]' % (matchURL, pLeague, pLeague)
             else: print "No %sv%s matches found" % (pLeague, pLeague)
         if args.output_html: print "<br><br>"
+    
+    if args.output_wikia: print "~~~~"
             
 if __name__ == '__main__':
     main()
