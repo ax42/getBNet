@@ -23,12 +23,13 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
                    ["http://eu.battle.net/sc2/en/profile/2718974/1/MrChipindip/"],
                    ["http://eu.battle.net/sc2/en/profile/2149899/1/CiderDad/"],
-                   #["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
+                   ["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
                    ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],                   
                    #["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
-                   ["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
+                   #["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
+                   ["http://eu.battle.net/sc2/en/profile/2800505/1/riemka/"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
-                   ["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
+                   #["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
                    ["Pain", "2874785", "1", "eu"],
                    #["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
                    ]
@@ -120,23 +121,26 @@ def main():
             
             if divisionFound:    
                 league = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
-                if VERBOSE: print division, league
+                if VERBOSE: print division, ":", league
                 
-                ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
-                
-                if VERBOSE > 1: print ltable
-                
-                ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
-                
-                nums = [r.match(y).group(1) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
-                names = [r.match(y).group(2) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
-                points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
-                
-                players = zip(ranks, nums, names, points)  
-                playerIndex = nums.index(pNo)
-                if VERBOSE > 1: print "%d players" % (len(players)), players
-                if VERBOSE > 1: print "playerIndex", playerIndex
-                if VERBOSE: print players[playerIndex]
+                if division == None:
+                    divisionFound = False
+                else:
+                    ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
+                    
+                    if VERBOSE > 1: print ltable
+                    
+                    ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
+                    
+                    nums = [r.match(y).group(1) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
+                    names = [r.match(y).group(2) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
+                    points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
+                    
+                    players = zip(ranks, nums, names, points)  
+                    playerIndex = nums.index(pNo)
+                    if VERBOSE > 1: print "%d players" % (len(players)), players
+                    if VERBOSE > 1: print "playerIndex", playerIndex
+                    if VERBOSE: print players[playerIndex]
                 
         # Get match history
         matchURL = charURL + "matches"
@@ -194,7 +198,11 @@ def main():
             if divisionFound:
                 oLeague = "%s in %s" % (players[playerIndex][0], league)
 
-        if not divisionFound: oLeague = "Could not read ladder info from b.net"
+        if not divisionFound: 
+            if division == None:
+                oLeague = "Not yet placed"
+            else:
+                oLeague = "Could not read ladder info from b.net"
         
         
         print "%s" % (";" if args.output_wikia else "") ,oName, ":", oLeague,
