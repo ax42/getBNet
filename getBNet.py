@@ -27,8 +27,10 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],                   
                    #["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
                    #["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
+                   ["http://eu.battle.net/sc2/en/profile/2815988/1/Rakso/"],
                    ["http://eu.battle.net/sc2/en/profile/2800505/1/riemka/"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
+                   ["http://eu.battle.net/sc2/en/profile/350225/1/tipsybroom/"],
                    #["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
                    ["Pain", "2874785", "1", "eu"],
                    #["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
@@ -169,13 +171,10 @@ def main():
             """ print player points for index v, surround with [] if it is current player
             """
             if (v == playerIndex):
-                if args.output_bbcode: print "[color=#dd2423]",
-                elif args.output_html: print '<span style="color:#dd2423">',
-                elif args.output_wikia: print '<u>',
-                print "[%s]" % players[v][3],
-                if args.output_bbcode: print "[/color]",
-                elif args.output_html: print "</span>",
-                elif args.output_wikia: print '</u>',
+                if args.output_bbcode: print "[color=#dd2423][%s][/color]" % players[v][3],
+                elif args.output_html: print '<span style="color:#dd2423">[%s]</span>' % players[v][3],
+                elif args.output_wikia: print '<u>[%s]</u>'  % players[v][3],
+                else: print '[%s]' % players[v][3],
             else: print "%s" % players[v][3],
             
         if args.output_bbcode:
