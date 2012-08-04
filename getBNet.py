@@ -100,51 +100,46 @@ def main():
         ladderFound = False
         divisionFound = False
         
-        try:
-            ladderURL = "http://%s.battle.net" % (pServer) + \
-                p.find('div', {"class":"ladder", "data-tooltip":"#best-team-%s" % (pLeague)}).find('a')['href']
-            ladderFound = True
-        except:
-            if VERBOSE: print p.title
-            pass
-            #print "%s: Couldn't determine ladder URL from b.net ('%s'), skipping" % (pName, p.title.string)
-        
-            
+        ladderURL = charURL+"ladder/leagues"    
         if VERBOSE: print "ladderURL", ladderURL
         
-        if ladderFound:
-            # Read ladder page and parse it for current points standings
-            raw = urllib.urlopen(ladderURL.encode('utf-8')).read()
-            p = BeautifulSoup(raw)
-            try:
-                division = p.find('',{'class' : 'data-title'}).find(text=re.compile('Division'))
-                divisionFound = True
-            except:
-                pass
-                #print "%s: Couldn't read division information from b.net ('%s'), skipping" % (pName, p.title.string)
+        # Read ladder page and parse it for current points standings
+        raw = urllib.urlopen(ladderURL.encode('utf-8')).read()
+        p = BeautifulSoup(raw)
+        
+        # 1v1 division is third menu item on left menu
+        matchURL = charURL + "ladder/" + p.find('ul', id="profile-menu").findAll('a')[2]['href']
+        if VERBOSE: print "matchURL", matchURL
+                            
+        try:
+            division = p.find('',{'class' : 'data-title'}).find(text=re.compile('Division'))
+            divisionFound = True
+        except:
+            pass
+            #print "%s: Couldn't read division information from b.net ('%s'), skipping" % (pName, p.title.string)
+        
+        if divisionFound:    
+            league = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
+            if VERBOSE: print division, ":", league
             
-            if divisionFound:    
-                league = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
-                if VERBOSE: print division, ":", league
+            if division == None:
+                divisionFound = False
+            else:
+                ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
                 
-                if division == None:
-                    divisionFound = False
-                else:
-                    ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
-                    
-                    if VERBOSE > 1: print ltable
-                    
-                    ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
-                    
-                    nums = [r.match(y).group(1) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
-                    names = [r.match(y).group(2) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
-                    points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
-                    
-                    players = zip(ranks, nums, names, points)  
-                    playerIndex = nums.index(pNo)
-                    if VERBOSE > 1: print "%d players" % (len(players)), players
-                    if VERBOSE > 1: print "playerIndex", playerIndex
-                    if VERBOSE: print players[playerIndex]
+                if VERBOSE > 1: print ltable
+                
+                ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
+                
+                nums = [r.match(y).group(1) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
+                names = [r.match(y).group(2) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
+                points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
+                
+                players = zip(ranks, nums, names, points)  
+                playerIndex = nums.index(pNo)
+                if VERBOSE > 1: print "%d players" % (len(players)), players
+                if VERBOSE > 1: print "playerIndex", playerIndex
+                if VERBOSE: print players[playerIndex]
                 
         # Get match history
         matchURL = charURL + "matches"
@@ -213,7 +208,8 @@ def main():
             if playerIndex > 4: print "...",
             for x in range(max(1, playerIndex - 3), min(playerIndex + 3, len(players))):
                 pprint(x)   
-        print  
+        print
+        
         if args.output_wikia: 
             print ":",
         else: 
