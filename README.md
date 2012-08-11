@@ -6,7 +6,7 @@ Fetch SC2 character information from battle.net
 Shows position, win rate, wins and losses, and points.
 Modify the 'defaultProfiles' array for the profiles you want to look up if no arguments are given.
 
-Works for me under python 2.7 on OS X and requires BeautifulSoup
+Works for me under python 2.7 on both OS X and Windows 7, and requires BeautifulSoup
 
 Run getBNet.py -h to show the usage.
 
