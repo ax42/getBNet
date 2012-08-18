@@ -33,6 +33,7 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
                    ["http://eu.battle.net/sc2/en/profile/350225/1/tipsybroom/"],
                    #["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
+                   ["http://eu.battle.net/sc2/en/profile/1917266/1/Venom/"],
                    ["http://eu.battle.net/sc2/en/profile/2821163/1/Zoglug/"],
                    ["Pain", "2874785", "1", "eu"],
                    #["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
@@ -49,9 +50,11 @@ def main():
     ap = argparse.ArgumentParser(description="Fetch SC2 character information from battle.net")
     ap.add_argument('-v','--verbose', default=0,
         help="Verbose output, add more v's for more verbosity", action="count")
+    ap.add_argument('-d', '--date', help="Print date at start of output", action="store_true")
     ap.add_argument('-c', '--character', metavar=("Name","BNet#","League 1/2/4", "eu/na"), nargs=4, action="append", help="Character details", default=None)
     ap.add_argument('-u', '--url', metavar=("Battle.net URL", "League 1/2/4"), help='Battle.net URL [optional league 1/2/4, default=1]', default=None, action="append", nargs='+')
     ap.add_argument('-f', '--find', metavar="Name", help='Specify one of the builtin profiles to display', action="append", default=None)
+
     outputFormat = ap.add_mutually_exclusive_group()
     outputFormat.add_argument('-ob', '--output-bbcode', help="Output in BBCode markup", action="store_true")
     outputFormat.add_argument('-oh', '--output-html', help="Output with html markup", action="store_true")
@@ -174,6 +177,7 @@ def main():
                 else: print '[%s]' % players[v][3],
             else: print "%s" % players[v][3],
             
+        if args.date: print datetime.now().strftime("%Y-%m-%d %H:%M %Z")
         if args.output_bbcode:
             oName = "[url=%s]%s[/url]" % (charURL, pName)
             if divisionFound:
