@@ -22,7 +22,6 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/bNoLuck/"],
                    ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
                    ["http://eu.battle.net/sc2/en/profile/2718974/1/FatherChip/"],
-                   ["http://eu.battle.net/sc2/en/profile/2149899/1/CiderDad/"],
                    #["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
                    ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],                   
                    #["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
@@ -30,6 +29,7 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    #["http://eu.battle.net/sc2/en/profile/2999250/1/Rakso/"],
                    #["http://eu.battle.net/sc2/en/profile/2815988/1/Rakso/"],
                    ["http://eu.battle.net/sc2/en/profile/2800505/1/bRiemka/"],
+                   ["http://eu.battle.net/sc2/en/profile/2149899/1/Sasquatch/"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
                    ["http://eu.battle.net/sc2/en/profile/350225/1/tipsybroom/"],
                    #["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
@@ -80,6 +80,7 @@ def main():
     # regex for ladder page
     r = re.compile(r"/sc2/en/profile/(\d+)/\d/(\S+)/")
     
+    if args.date: print datetime.now().strftime("%Y-%m-%d %H:%M %Z")
     for curPlayer in profiles:
         #First find the league page
         if len(curPlayer) == 1:  # assume it's only a URL
@@ -177,7 +178,6 @@ def main():
                 else: print '[%s]' % players[v][3],
             else: print "%s" % players[v][3],
             
-        if args.date: print datetime.now().strftime("%Y-%m-%d %H:%M %Z")
         if args.output_bbcode:
             oName = "[url=%s]%s[/url]" % (charURL, pName)
             if divisionFound:
