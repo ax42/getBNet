@@ -18,12 +18,15 @@ Contact: sc2.frozen@fastmail.fm
 # profile either:
 # Name, Number, League (1,2,4), Server
 # URL, [optional League, default is "1"] 
-defaultProfiles = [["Frozen", "2492514", "1", "eu"], 
+defaultProfiles = [
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/bNoLuck/"],
                    ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
                    ["http://eu.battle.net/sc2/en/profile/2718974/1/FatherChip/"],
+                   ["http://eu.battle.net/sc2/en/profile/1455874/1/bFishbrain/"],
                    #["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
-                   ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],                   
+                   ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],  
+                   ["Frozen", "2492514", "1", "eu"],     
+                   ["http://eu.battle.net/sc2/en/profile/513350/1/Howz/"],            
                    #["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
                    #["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
                    #["http://eu.battle.net/sc2/en/profile/2999250/1/Rakso/"],
@@ -34,7 +37,7 @@ defaultProfiles = [["Frozen", "2492514", "1", "eu"],
                    ["http://eu.battle.net/sc2/en/profile/350225/1/tipsybroom/"],
                    #["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
                    ["http://eu.battle.net/sc2/en/profile/1917266/1/Venom/"],
-                   ["http://eu.battle.net/sc2/en/profile/2821163/1/Zoglug/"],
+                   #["http://eu.battle.net/sc2/en/profile/2821163/1/Zoglug/"],
                    ["Pain", "2874785", "1", "eu"],
                    #["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
                    ]
