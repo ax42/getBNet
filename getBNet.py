@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 #!/opt/local/bin/python
 # coding=utf-8
 # vim:et:sts:sw=4:sts=4
-# Last modified: 2012 May 02
+# Last modified: 2012 Nov 08
 
 """ Module Docstring
 Fetch SC2 character information from battle.net.
@@ -21,18 +22,21 @@ Contact: sc2.frozen@fastmail.fm
 defaultProfiles = [
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/bNoLuck/"],
                    ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
+                   ["http://eu.battle.net/sc2/en/profile/2594459/1/Boombox/"],
                    ["http://eu.battle.net/sc2/en/profile/2718974/1/FatherChip/"],
                    ["http://eu.battle.net/sc2/en/profile/1455874/1/bFishbrain/"],
                    #["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
                    ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],  
                    ["Frozen", "2492514", "1", "eu"],     
-                   ["http://eu.battle.net/sc2/en/profile/513350/1/Howz/"],            
+                   ["http://eu.battle.net/sc2/en/profile/513350/1/Howz/"],   
+                   ["http://eu.battle.net/sc2/en/profile/303432/1/LoveMaker/"],         
                    #["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
+                   ["http://eu.battle.net/sc2/en/profile/2617570/1/MGB/"],
                    #["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
                    #["http://eu.battle.net/sc2/en/profile/2999250/1/Rakso/"],
                    #["http://eu.battle.net/sc2/en/profile/2815988/1/Rakso/"],
                    ["http://eu.battle.net/sc2/en/profile/2800505/1/bRiemka/"],
-                   ["http://eu.battle.net/sc2/en/profile/2149899/1/Sasquatch/"],
+                   #["http://eu.battle.net/sc2/en/profile/2149899/1/Sasquatch/"],
                    ["http://eu.battle.net/sc2/en/profile/822228/1/StupidBrit/"],
                    ["http://eu.battle.net/sc2/en/profile/350225/1/tipsybroom/"],
                    #["http://eu.battle.net/sc2/en/profile/2232673/1/wargeneral/"],
@@ -238,7 +242,7 @@ def main():
                 matchPeriod, "s" if matchPeriod > 1 else "", \
                 oWinRate,
                 sum(matchScores)),
-            print ''.join(["." if x < 0 else "+" if x > 0 else "x" for x in matchScores])
+            print ''.join(["." if x <= 0 else "+" for x in matchScores])
         else:
             if args.output_bbcode: print "[url=%s]No %sv%s matches found[/url]" % (matchURL, pLeague, pLeague)
             elif args.output_html: print '<a href="%s">No %sv%s matches found</a>' % (matchURL, pLeague, pLeague)
