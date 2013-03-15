@@ -162,17 +162,22 @@ def main():
         
         matchDates = [datetime.strptime(x.find('',{"class":"align-right"}).string.strip(), "%d/%m/%Y") for x in pMatches]
         matchScores = []
+        matchOutcomes = []
         for x in pMatches:
             try:
                 matchScores.append(int(x.find('span',{"class":re.compile("text-")}).string))
             except AttributeError:
                 matchScores.append(0)
+            try:
+                matchOutcomes.append(x.find('span',{"class":re.compile("match-")}).string)
+            except AttributeError:
+                matchOutcomes.append(0)
         
         #matchScores = [int(x.find('span',{"class":re.compile("text-")}).string) for x in pMatches]
-        matchWins = len([x for x in matchScores if x > 0])
-        
+        matchWins = len([x for x in matchOutcomes if x == "Win"])
         
         if VERBOSE: print "matchScores", matchScores
+        if VERBOSE: print "matchOutcome", matchOutcomes
         if VERBOSE: print "matchDates", matchDates
             
         def pprint(v):
@@ -242,7 +247,7 @@ def main():
                 matchPeriod, "s" if matchPeriod > 1 else "", \
                 oWinRate,
                 sum(matchScores)),
-            print ''.join(["." if x <= 0 else "+" for x in matchScores])
+            print ''.join(["+" if x == "Win" else "." for x in matchOutcomes])
         else:
             if args.output_bbcode: print "[url=%s]No %sv%s matches found[/url]" % (matchURL, pLeague, pLeague)
             elif args.output_html: print '<a href="%s">No %sv%s matches found</a>' % (matchURL, pLeague, pLeague)
