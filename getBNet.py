@@ -43,6 +43,7 @@ defaultProfiles = [
                    ["http://eu.battle.net/sc2/en/profile/1917266/1/Venom/"],
                    #["http://eu.battle.net/sc2/en/profile/2821163/1/Zoglug/"],
                    ["Pain", "2874785", "1", "eu"],
+                   ["http://us.battle.net/sc2/en/profile/4317361/1/Flame/"]
                    #["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
                    ]
 
@@ -136,15 +137,17 @@ def main():
             if division == None:
                 divisionFound = False
             else:
+                bonusPool = int(p.find('span', {"id":"bonus-pool"}).find('span').string)
+                if VERBOSE: print bonusPool
                 ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
                 
-                if VERBOSE > 1: print ltable
+                if VERBOSE > 2: print ltable
                 
                 ranks = [x.string for x in p.findAll('td', {"class":"align-center", "style":True, "data-tooltip":None})]
                 
                 nums = [r.match(y).group(1) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
                 names = [r.match(y).group(2) for y in [x['href'] for x in p.findAll('a', {"data-tooltip":re.compile("#player")})]]
-                points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::2]
+                points = [x.string for x in p.findAll('td', {"class":"align-center", "style":None})][::3]
                 
                 players = zip(ranks, nums, names, points)  
                 playerIndex = nums.index(pNo)
@@ -160,7 +163,10 @@ def main():
         pMatches = p.findAll('tr',{"class":"match-row %s" % (matchType)})
         if VERBOSE: print "len(pMatches)", len(pMatches), p.title.string
         
-        matchDates = [datetime.strptime(x.find('',{"class":"align-right"}).string.strip(), "%d/%m/%Y") for x in pMatches]
+        if pServer == "eu": dtFormat = "%d/%m/%Y"
+        elif pServer == "us": dtFormat = "%m/%d/%Y"
+
+        matchDates = [datetime.strptime(x.find('',{"class":"align-right"}).string.strip(), dtFormat) for x in pMatches]
         matchScores = []
         matchOutcomes = []
         for x in pMatches:
@@ -223,7 +229,8 @@ def main():
             pprint(0)
             if playerIndex > 4: print "...",
             for x in range(max(1, playerIndex - 3), min(playerIndex + 3, len(players))):
-                pprint(x)   
+                pprint(x)  
+            print "(Bonus Pool %d)" % bonusPool,
         print
         
         if args.output_wikia: 
