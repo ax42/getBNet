@@ -119,16 +119,19 @@ def main():
         raw = urllib.urlopen(ladderURL.encode('utf-8')).read()
         p = BeautifulSoup(raw)
         
-        # 1v1 division is third menu item on left menu
-        matchURL = charURL + "ladder/" + p.find('ul', id="profile-menu").findAll('a')[2]['href']
-        if VERBOSE: print "matchURL", matchURL
-                            
+        # 1v1 division is 4th menu item on left menu
+        try:
+            matchURL = charURL + "ladder/" + p.find('ul', id="profile-menu").findAll('a')[3]['href']
+            if VERBOSE: print "matchURL", matchURL
+        except:
+            pass
+
         try:
             division = p.find('',{'class' : 'data-title'}).find(text=re.compile('Division'))
             divisionFound = True
         except:
-            pass
-            #print "%s: Couldn't read division information from b.net ('%s'), skipping" % (pName, p.title.string)
+            division = ""  # Some occurred while fetching the division's page from b.net
+            if VERBOSE: print "Error: Couldn't read division information from b.net for %s ('%s'), skipping" % (pName, p.title.string)
         
         if divisionFound:    
             league = re.match(r"(\w+\s){2}",p.title.string).group(0).strip()
