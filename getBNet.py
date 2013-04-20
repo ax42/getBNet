@@ -18,7 +18,7 @@ Contact: sc2.frozen@fastmail.fm
 
 # profile either:
 # Name, Number, League (1,2,4), Server
-# URL, [optional League, default is "1"] 
+# URL, [optional League, default is "1"]
 defaultProfiles = [
                    ["http://eu.battle.net/sc2/en/profile/2104202/1/bNoLuck/"],
                    ["http://eu.battle.net/sc2/en/profile/357646/1/Blackrock/"],
@@ -26,10 +26,10 @@ defaultProfiles = [
                    ["http://eu.battle.net/sc2/en/profile/2718974/1/FatherChip/"],
                    ["http://eu.battle.net/sc2/en/profile/1455874/1/bFishbrain/"],
                    #["http://eu.battle.net/sc2/en/profile/1926235/1/eXeGouge/"],
-                   ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],  
+                   ["http://eu.battle.net/sc2/en/profile/230074/1/Freezinghell/"],
                    ["Frozen", "2492514", "1", "eu"],     
                    ["http://eu.battle.net/sc2/en/profile/513350/1/Howz/"],   
-                   ["http://eu.battle.net/sc2/en/profile/303432/1/LoveMaker/"],         
+                   ["http://eu.battle.net/sc2/en/profile/303432/1/LoveMaker/"],     
                    #["http://eu.battle.net/sc2/en/profile/752743/1/Meelro/"],
                    ["http://eu.battle.net/sc2/en/profile/2617570/1/MGB/"],
                    #["http://eu.battle.net/sc2/en/profile/1441551/1/SirCouldwell/"],
@@ -49,17 +49,17 @@ defaultProfiles = [
 
 import sys
 import argparse
-import urllib, urlparse
+import urllib
 import re
 from datetime import datetime
 from BeautifulSoup import BeautifulSoup
 
+
 def main():
     ap = argparse.ArgumentParser(description="Fetch SC2 character information from battle.net")
-    ap.add_argument('-v','--verbose', default=0,
-        help="Verbose output, add more v's for more verbosity", action="count")
+    ap.add_argument('-v', '--verbose', default=0, help="Verbose output, add more v's for more verbosity", action="count")
     ap.add_argument('-d', '--date', help="Print date at start of output", action="store_true")
-    ap.add_argument('-c', '--character', metavar=("Name","BNet#","League 1/2/4", "eu/na"), nargs=4, action="append", help="Character details", default=None)
+    ap.add_argument('-c', '--character', metavar=("Name", "BNet#", "League 1/2/4", "eu/na"), nargs=4, action="append", help="Character details", default=None)
     ap.add_argument('-u', '--url', metavar=("Battle.net URL", "League 1/2/4"), help='Battle.net URL [optional league 1/2/4, default=1]', default=None, action="append", nargs='+')
     ap.add_argument('-f', '--find', metavar="Name", help='Specify one of the builtin profiles to display', action="append", default=None)
 
@@ -76,8 +76,8 @@ def main():
     if args.character: [profiles.append(x) for x in args.character]
     if args.find:
         for f in args.find:
-            [profiles.append(x) for x in defaultProfiles if re.search(f, x[0]) != None]
-    if args.url: [profiles.append(x) for x in args.url]  
+            [profiles.append(x) for x in defaultProfiles if re.search(f, x[0]) is not None]
+    if args.url: [profiles.append(x) for x in args.url]
     if len(profiles) == 0: profiles = defaultProfiles
 
     if len(profiles) == 0:  # ie the defaultProfiles list was empty -- edge case
@@ -87,38 +87,38 @@ def main():
     if VERBOSE: print "Profiles to fetch:", profiles
     # regex for ladder page
     r = re.compile(r"/sc2/en/profile/(\d+)/\d/(\S+)/")
-    
+  
     if args.date: print datetime.now().strftime("%Y-%m-%d %H:%M %Z")
     for curPlayer in profiles:
         #First find the league page
         if len(curPlayer) == 1:  # assume it's only a URL
             charURL = curPlayer[0]
-            pLeague = "1" # URLS hard-coded to 1v1 for now
-        elif len(curPlayer) == 2: # assume a URL and a league
+            pLeague = "1"  # URLS hard-coded to 1v1 for now
+        elif len(curPlayer) == 2:  # assume a URL and a league
             charURL = curPlayer[0]
             pLeague = curPlayer[1]
         else:
             charURL = "http://%s.battle.net/sc2/en/profile/%s/1/%s/" % (curPlayer[3], curPlayer[1], curPlayer[0])
             pLeague = curPlayer[2]
         if VERBOSE: print "charURL", charURL
-        
+    
         pServer, pNo, pName = re.match(r"http://(..)\.battle\.net/sc2/en/profile/(\d+)/\d/(\S+)/", charURL).groups()
         if VERBOSE: print pServer, pNo, pName, pLeague
-    
+
         # Open profile page, figure out ladder URL
         raw = urllib.urlopen(charURL).read()
         if VERBOSE > 2: print raw
         p = BeautifulSoup(raw)
-        ladderFound = False
+
         divisionFound = False
-        
-        ladderURL = charURL+"ladder/leagues"    
+       
+        ladderURL = charURL+"ladder/leagues"  
         if VERBOSE: print "ladderURL", ladderURL
-        
+       
         # Read ladder page and parse it for current points standings
         raw = urllib.urlopen(ladderURL.encode('utf-8')).read()
         p = BeautifulSoup(raw)
-        
+       
         # 1v1 division is 4th menu item on left menu
         try:
             matchURL = charURL + "ladder/" + p.find('ul', id="profile-menu").findAll('a')[3]['href']
