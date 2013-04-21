@@ -140,7 +140,12 @@ def main():
             if division == None:
                 divisionFound = False
             else:
-                bonusPool = int(p.find('span', {"id":"bonus-pool"}).find('span').string)
+                try:
+                    bonusPool = int(p.find('span', {"id":"bonus-pool"}).find('span').string)
+                except:
+                    bonusPool = 0
+                    if VERBOSE: print "bonusPool not found, assuming 0"
+                
                 if VERBOSE: print bonusPool
                 ltable = p.find('table', {'class' : 'data-table ladder-table'}).findAll('td')
                 
