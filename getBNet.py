@@ -1,8 +1,8 @@
-#!/usr/bin/env python
 #!/opt/local/bin/python
+#!/usr/bin/env python
 # coding=utf-8
 # vim set et sts sw=4 sts=4 pymode_lint_ignore="E701"
-# Last modified: 2013 Apr 25
+# Last modified: 2013 Jun 02
 
 """ Module Docstring
 Fetch SC2 character information from battle.net.
@@ -43,8 +43,8 @@ defaultProfiles = [
                    ["http://eu.battle.net/sc2/en/profile/1917266/1/Venom/"],
                    #["http://eu.battle.net/sc2/en/profile/2821163/1/Zoglug/"],
                    ["Pain", "2874785", "1", "eu"],
-                   ["http://us.battle.net/sc2/en/profile/4317361/1/Flame/"]
-                   #["http://eu.battle.net/sc2/en/profile/574878/1/eXeZero/"],
+                   ["http://us.battle.net/sc2/en/profile/4317361/1/Flame/"],
+                   ["http://us.battle.net/sc2/en/profile/4723309/1/Zergling/"]
                 ]
 
 import sys
